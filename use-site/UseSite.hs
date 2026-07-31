@@ -1,7 +1,7 @@
 -- B6.2 use-site check for the 31 bound function-like SDL3 macros.
 --
 -- Everything in this module compiles. The cases that do NOT compile are
--- recorded in UseSiteFail.hs.
+-- recorded in UseSiteNewtype.hs.
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module UseSite where
@@ -50,6 +50,9 @@ swap16le_Word16    = sDL_Swap16LE          (1 :: Word16)
 composed           = sDL_PIXELTYPE (sDL_DEFINE_PIXELFORMAT
                         (1 :: CInt) (2 :: CInt) (3 :: CInt) (4 :: CInt) (5 :: CInt))
 
--- the workaround for SDL's own newtypes: unwrap, apply, (re-wrap) --------------
+-- SDL's own newtypes only work unwrapped -------------------------------------
+--
+-- Evidence that the bindings are fine and only the instances are missing; not
+-- the fix. That is hs-bindgen#2184: derive Bitwise & co. for generated newtypes.
 
 unwrapped          = sDL_AUDIO_BITSIZE (unwrapSDL_AudioFormat (SDL_AudioFormat 0x8010))

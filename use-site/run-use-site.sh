@@ -9,8 +9,9 @@
 #   UseSiteNewtype  must FAIL    — the same macros applied to SDL's own newtypes
 #
 # The second failing is the finding, not an error: c-expr-runtime instantiates
-# its operator classes only at the Foreign.C.Types types, so a bound macro
-# cannot be applied to the values SDL's API produces without unwrapping first.
+# its operator classes only at the Foreign.C.Types types and hs-bindgen does not
+# derive them for the newtypes it generates (hs-bindgen#2184), so a bound macro
+# cannot be applied to the values SDL's API produces.
 
 set -euo pipefail
 

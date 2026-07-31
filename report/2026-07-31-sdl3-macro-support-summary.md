@@ -26,9 +26,8 @@ So the survey's real subject is 160 function-like + ~119 object-like macros, not
 ## Most consequential finding: bound ≠ usable
 
 All 31 bound function-like macros are **inapplicable to the values SDL's own API
-produces** without a manual unwrap. `c-expr-runtime` instantiates its operator
-classes only at the `Foreign.C.Types` types, while hs-bindgen generates SDL's
-types as newtypes:
+produces**. `c-expr-runtime` instantiates its operator classes only at the
+`Foreign.C.Types` types, while hs-bindgen generates SDL's types as newtypes:
 
 ```haskell
 sDL_AUDIO_BITSIZE (SDL_AudioFormat 0x8010)
@@ -38,13 +37,17 @@ sDL_AUDIO_BITSIZE (Uint32 0x8010)          -- SDL's own fixed-width alias
 sDL_AUDIO_BITSIZE (unwrapSDL_AudioFormat (SDL_AudioFormat 0x8010))  -- compiles
 ```
 
-Same for every enum newtype, and `Word32`/`Int64` from `Data.Word`/`Data.Int`
-have no instances either. A bare literal also needs an annotation at each call
-site (`0x8010 :: CUInt`) or the type variable is ambiguous. From a use site the
-bound macros therefore look no more available than the dropped ones — very
-plausibly the *actual* experience behind "macros aren't bound". Fixes belong to
-`c-expr-runtime` (instance coverage) and `hs-bindgen` (deriving operator
-instances for generated newtypes).
+That last line is the diagnosis, not the remedy: the bindings are fine, the
+instances are missing. The fix is for hs-bindgen to **derive `Bitwise` and its
+sibling operator classes for the newtypes it generates**
+([#2184](https://github.com/well-typed/hs-bindgen/issues/2184)) — an unwrap at
+every call site would discard exactly the type distinction the newtype exists to
+make. Separately, `Word32`/`Int64` from `Data.Word`/`Data.Int` have no instances
+either (that one is `c-expr-runtime` instance coverage), and a bare literal needs
+an annotation at each call site (`0x8010 :: CUInt`) or the type variable is
+ambiguous. From a use site the bound macros therefore look no more available than
+the dropped ones — very plausibly the *actual* experience behind "macros aren't
+bound".
 
 The generated code itself does compile: `--select-all` output (3.6 MB, 4 modules)
 builds clean with GHC 9.12.3.
@@ -161,11 +164,12 @@ typing (#2182); negative tests for the ~24 constructs currently untested
 (`sizeof`, `#`, `##`, statement expressions, `.`/`->`/`[]`, `_Generic`,
 `__VA_ARGS__`, …) — a fix in any of these could regress silently today.
 
-**In hs-bindgen:** enum constants in macro resolution scope; operator instances
-for generated newtypes (the usability blocker); surface macro drops at default
-verbosity or emit a closing summary; a prescriptive SDL binding spec omitting the
-annotation plumbing (36 function-like, 114 macros total); and a stale CLAUDE.md
-claim that `c-expr-dsl`/`c-expr-runtime`/`libclang-bindings`/`doxygen-parser` are
+**In hs-bindgen:** enum constants in macro resolution scope; derive the operator
+classes for generated newtypes (#2184 — the usability blocker); surface macro
+drops at default verbosity or emit a closing summary; a prescriptive SDL binding
+spec omitting the annotation plumbing (36 function-like, 114 macros total); and a
+stale CLAUDE.md claim that
+`c-expr-dsl`/`c-expr-runtime`/`libclang-bindings`/`doxygen-parser` are
 pinned source-repository-packages when they are plain Hackage dependencies.
 
 ## Caveats

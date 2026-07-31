@@ -50,7 +50,8 @@ the frontend's `DeclIndex` with a verdict. No residue.
 
 **Of the ~160 function-like macros the community report implies are unbound, 31
 are bound today** — not zero. That said, see B6: none of the 31 can be applied to
-the SDL types they exist to operate on without unwrapping a newtype first.
+the SDL types they exist to operate on, because the operator classes are not
+derived for the generated newtypes (#2184).
 
 ### One number dominates the object-like column
 
@@ -382,15 +383,21 @@ sDL_AUDIO_BITSIZE (Uint32 0x8010)
   -- No instance for 'Bitwise Uint32 CUInt'
 ```
 
-The workaround is to unwrap first, and it does compile:
+Unwrapping the argument by hand does compile, which pins the diagnosis: the
+generated macro bindings are fine, only the instances are missing.
 
 ```haskell
 sDL_AUDIO_BITSIZE (unwrapSDL_AudioFormat (SDL_AudioFormat 0x8010))
 ```
 
-So **all 31 bound function-like macros are inapplicable to the values SDL's own
-API produces** without a manual unwrap (and a re-wrap if the result feeds back
-into SDL). `Uint32`/`Uint16`/`Sint64` — SDL's own fixed-width aliases, used
+It is not the fix, though — an unwrap (plus a re-wrap when the result feeds back
+into SDL) at every call site discards exactly the type distinction the newtype
+exists to make. The fix is on hs-bindgen's side: **derive the `c-expr-runtime`
+operator classes — `Bitwise` and its siblings — for the newtypes hs-bindgen
+generates**, tracked as
+[#2184](https://github.com/well-typed/hs-bindgen/issues/2184). Until then **all
+31 bound function-like macros are inapplicable to the values SDL's own API
+produces**. `Uint32`/`Uint16`/`Sint64` — SDL's own fixed-width aliases, used
 throughout its signatures — are equally affected, as is every generated
 `newtype`-over-`Word32` and every enum newtype.
 
@@ -413,8 +420,9 @@ set works.
 Taken together, this is very plausibly the *actual* experience behind "macros
 aren't bound": the macros that are bound reject SDL's own types, so from a use
 site they look no more available than the ones that were dropped. Fixes here are
-`c-expr-runtime`'s (instance coverage) and `hs-bindgen`'s (deriving operator
-instances for generated newtypes), not `c-expr-dsl`'s.
+`hs-bindgen`'s (derive the operator classes for generated newtypes, #2184) and
+`c-expr-runtime`'s (instance coverage for the `Data.Word` / `Data.Int` types),
+not `c-expr-dsl`'s.
 
 ## B7 — diagnostics visibility
 
@@ -483,8 +491,10 @@ In `c-expr` (grammar / runtime):
 In `hs-bindgen`:
 
 8. enum constants absent from macro resolution scope — 11 user-facing macros
-9. operator instances for generated newtypes (`Uint32`, enum newtypes) — the B6
-   blocker; without it the bound macros are unusable on SDL's own types
+9. derive the `c-expr-runtime` operator classes (`Bitwise`, …) for generated
+   newtypes (`Uint32`, enum newtypes) — the B6 blocker; without it the bound
+   macros are unusable on SDL's own types
+   ([#2184](https://github.com/well-typed/hs-bindgen/issues/2184))
 10. surface macro drops at default verbosity / closing summary
 11. a prescriptive binding spec for SDL that omits the annotation plumbing
     (`SDL_ACQUIRE`, `SDL_GUARDED_BY`, `SDL_OUT_Z_CAP`, … — 36 function-like, 114

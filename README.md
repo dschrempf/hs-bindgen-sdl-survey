@@ -18,7 +18,9 @@ Headline: of 1980 macros defined under `SDL/include`, 1099 bind (31 of the 160
 function-like ones); 53 are dropped as cascades of another failure and 828 fail
 in their own right — 594 of those being `SDL_oldnames.h` shims that are *meant*
 to be unbindable. The most consequential finding is that bound ≠ usable: all 31
-bound function-like macros reject the newtypes SDL's own API produces.
+bound function-like macros reject the newtypes SDL's own API produces, because
+the `c-expr-runtime` operator classes are not derived for them
+([hs-bindgen#2184](https://github.com/well-typed/hs-bindgen/issues/2184)).
 
 ## Reproducing
 

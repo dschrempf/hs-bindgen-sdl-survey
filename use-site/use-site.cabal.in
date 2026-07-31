@@ -1,0 +1,13 @@
+cabal-version:   2.4
+name:            use-site
+version:         0
+synopsis:        B6 use-site check for the SDL3 macro-support survey
+build-type:      Simple
+
+library
+  default-language: Haskell2010
+  hs-source-dirs:   . gen
+  exposed-modules:  @MODULES@
+  build-depends:    base
+                  , c-expr-runtime
+                  , hs-bindgen-runtime

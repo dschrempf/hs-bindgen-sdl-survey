@@ -455,7 +455,8 @@ local checkout is assumed. See `README.md`.
 - `scripts/rank-macro-fixes.py` — blocker-set modelling and ranking
 - `scripts/compare-selection.py` — macros bound per selection mode
 - `probe/macro-grammar-probe.h` — 38 probes + 14 controls (Part A / B4)
-- `use-site/UseSite.hs`, `use-site/UseSiteNewtype.hs` — B6 harness
+- `use-site/UseSite.hs`, `use-site/UseSiteNewtype.hs` — B6 harness, run by
+  `use-site/run-use-site.sh` (the first must compile, the second must not)
 - `report/2026-07-31-sdl3-macro-support-appendix.csv` — per-macro appendix, all 1980
   SDL macros with stage, root cause, `also_contains`, dependency, error token and body
 

@@ -104,7 +104,7 @@ cat "$OUT/summary.txt" >&2
 
 if [ "${SURVEY_USE_SITE:-0}" = 1 ]; then
   step "B6 use-site check (builds the generated bindings)"
-  HS_BINDGEN=${HS_BINDGEN:-} "$ROOT/use-site/run-use-site.sh" "$OUT" >&2
+  SDL=$SDL HS_BINDGEN=${HS_BINDGEN:-} "$ROOT/use-site/run-use-site.sh" "$OUT" >&2
 fi
 
 step "reproduction check"

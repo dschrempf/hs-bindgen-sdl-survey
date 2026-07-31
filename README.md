@@ -61,8 +61,12 @@ Off by default because it compiles the 3.6 MB of generated bindings:
 
 ```bash
 SURVEY_USE_SITE=1 ./run-survey.sh
-./use-site/run-use-site.sh /tmp/sdl3-survey   # after a survey run
+SDL=/path/to/SDL ./use-site/run-use-site.sh /tmp/sdl3-survey   # after a survey run
 ```
+
+It stages a cabal package in `$OUT/use-site` (the generated modules plus the two
+hand-written ones) and builds it twice, at `-O0`: the generated code `#include`s
+`SDL3/SDL.h`, hence the `SDL` variable.
 
 `use-site/UseSite.hs` must compile and `use-site/UseSiteNewtype.hs` must *not* —
 that second failure is the finding.

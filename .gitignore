@@ -3,7 +3,5 @@ use-site/use-site.cabal
 use-site/cabal.project
 use-site/gen/
 
-/ai/agent-shell/
-
 /.direnv/
 /.envrc
